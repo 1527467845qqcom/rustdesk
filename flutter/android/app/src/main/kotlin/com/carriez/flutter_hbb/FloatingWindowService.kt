@@ -64,22 +64,7 @@ class FloatingWindowService : Service(), View.OnTouchListener {
         return null
     }
 
-    override fun onCreate() {
-        super.onCreate()
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        try {
-            if (firstCreate) {
-                firstCreate = false
-                onFirstCreate(windowManager)
-            }
-            Log.d(logTag, "floating window size: $viewWidth x $viewHeight, transparency: $viewTransparency, lastLayoutX: $lastLayoutX, lastLayoutY: $lastLayoutY, customSvg: $customSvg")
-            createView(windowManager)
-            handler.postDelayed(runnable, 1000)
-            Log.d(logTag, "onCreate success")
-        } catch (e: Exception) {
-            Log.d(logTag, "onCreate failed: $e")
-        }
-    }
+
 
     override fun onDestroy() {
         super.onDestroy()
