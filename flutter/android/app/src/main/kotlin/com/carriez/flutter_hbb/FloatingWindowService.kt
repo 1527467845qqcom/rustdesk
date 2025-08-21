@@ -28,6 +28,13 @@ import android.widget.PopupMenu
 import com.caverock.androidsvg.SVG
 import ffi.FFI
 import kotlin.math.abs
+import android.widget.FrameLayout
+import android.widget.TextView
+import android.graphics.Color
+import android.view.Gravity
+import android.util.TypedValue
+import android.view.ViewGroup
+import android.widget.Toast // 如果使用了 Toast
 
 class FloatingWindowService : Service(), View.OnTouchListener {
 
