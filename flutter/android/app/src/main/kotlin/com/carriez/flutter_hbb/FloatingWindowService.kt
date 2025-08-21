@@ -31,7 +31,6 @@ import kotlin.math.abs
 import android.widget.FrameLayout
 import android.widget.TextView
 import android.graphics.Color
-import android.view.Gravity
 import android.util.TypedValue
 import android.view.ViewGroup
 import android.widget.Toast // 如果使用了 Toast
