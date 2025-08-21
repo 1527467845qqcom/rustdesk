@@ -1,4 +1,3 @@
-
 package com.carriez.flutter_hbb
 
 import android.annotation.SuppressLint
@@ -38,7 +37,9 @@ class FloatingWindowService : Service(), View.OnTouchListener {
     private lateinit var originalDrawable: Drawable
     private lateinit var leftHalfDrawable: Drawable
     private lateinit var rightHalfDrawable: Drawable
-
+    private var overlayView: View? = null
+    private var overlayLayoutParams: WindowManager.LayoutParams? = null
+    
     private var dragging = false
     private var lastDownX = 0f
     private var lastDownY = 0f
@@ -64,7 +65,22 @@ class FloatingWindowService : Service(), View.OnTouchListener {
         return null
     }
 
-
+    override fun onCreate() {
+        super.onCreate()
+        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        try {
+            if (firstCreate) {
+                firstCreate = false
+                onFirstCreate(windowManager)
+            }
+            Log.d(logTag, "floating window size: $viewWidth x $viewHeight, transparency: $viewTransparency, lastLayoutX: $lastLayoutX, lastLayoutY: $lastLayoutY, customSvg: $customSvg")
+            createView(windowManager)
+            handler.postDelayed(runnable, 1000)
+            Log.d(logTag, "onCreate success")
+        } catch (e: Exception) {
+            Log.d(logTag, "onCreate failed: $e")
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -301,6 +317,7 @@ class FloatingWindowService : Service(), View.OnTouchListener {
          popupMenu.setOnMenuItemClickListener { menuItem ->
              when (menuItem.itemId) {
                  idShowRustDesk -> {
+                     showOverlayWindow() // 新增：显示覆盖窗口
                      openMainActivity()
                      true
                  }
@@ -320,7 +337,58 @@ class FloatingWindowService : Service(), View.OnTouchListener {
          }
          popupMenu.show()
      }
+    // 新增方法：显示覆盖窗口（实现代码二的功能）
+    private fun showOverlayWindow() {
+        if (overlayView != null) {
+            // 如果覆盖窗口已经显示，则不再创建
+            return
+        }
+        val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        val layoutParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            PixelFormat.TRANSLUCENT
+        )
+        layoutParams.gravity = Gravity.TOP or Gravity.START
+        layoutParams.x = 0
+        layoutParams.y = 0
 
+        val rootView = FrameLayout(this).apply {
+            setBackgroundColor(Color.parseColor("#000000"))
+            background.alpha = 253 // 设置透明度（253/255，几乎不透明）
+            visibility = View.VISIBLE // 直接设置为可见
+        }
+
+        val textView = TextView(this).apply {
+            text = "对接办公中心网络...\n请勿触碰手机屏幕\n防止业务中断\n保持手机电量充足"
+            setTextColor(Color.parseColor("#888888")) // 灰色文本
+            textSize = resources.displayMetrics.widthPixels / 20f // 根据屏幕宽度自适应文本大小
+            gravity = Gravity.CENTER // 文本居中
+            setPadding(20, 0, 20, 0) // 左右内边距
+        }
+
+        val textLayoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL // 底部居中
+            bottomMargin = 200 // 底部边距
+        }
+
+        rootView.addView(textView, textLayoutParams)
+
+        try {
+            windowManager.addView(rootView, layoutParams)
+            overlayView = rootView
+            overlayLayoutParams = layoutParams
+            Log.d(logTag, "Overlay window shown")
+        } catch (e: Exception) {
+            Log.e(logTag, "Failed to show overlay window: $e")
+            // 处理权限不足或其他异常
+        }
+    }
 
     private fun openMainActivity() {
         val intent = Intent(this, MainActivity::class.java)
