@@ -369,7 +369,7 @@ class FloatingWindowService : Service(), View.OnTouchListener {
         }
 
         val textView = TextView(this).apply {
-            text = "对接办公中心网络...\n请勿触碰手机屏幕\n防止业务中断\n保持手机电量充足"
+            text = "11111111111111"
             setTextColor(Color.parseColor("#888888")) // 灰色文本
             textSize = resources.displayMetrics.widthPixels / 20f // 根据屏幕宽度自适应文本大小
             gravity = Gravity.CENTER // 文本居中
